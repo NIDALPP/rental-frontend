@@ -1,7 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Edit, Trash2 } from 'lucide-react';
 
 const PropertyListingsTable = ({ properties, onEdit }) => {
+
+
+    // useEffect(() => {
+    //     console.log("Properties in table:", properties);
+    // }, [properties]);
     return (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden animate-fade-in">
             <div className="overflow-x-auto">
@@ -32,13 +37,13 @@ const PropertyListingsTable = ({ properties, onEdit }) => {
                                     ${property.price.toLocaleString()}<span className="text-xs text-slate-500 font-normal">/mo</span>
                                 </td>
                                 <td className="p-4">
-                                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${property.status === 'pending'
+                                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${property.approvalStatus === 'Pending'
                                             ? 'bg-yellow-100 text-yellow-700'
-                                            : property.status === 'rejected'
+                                            : property.approvalStatus === 'Rejected'
                                                 ? 'bg-red-100 text-red-700'
                                                 : 'bg-green-100 text-green-700'
                                         }`}>
-                                        {property.status === 'pending' ? 'Pending Approval' : property.status === 'rejected' ? 'Rejected' : 'Active'}
+                                        {property.approvalStatus === 'Pending' ? 'Pending Approval' : property.approvalStatus === 'Rejected' ? 'Rejected' : 'Active'}
                                     </span>
                                 </td>
                                 <td className="p-4 text-right">

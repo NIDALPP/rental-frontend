@@ -7,38 +7,55 @@ import AddPropertyForm from '../manage-properties/AddPropertyForm';
 
 const ManagePropertiesSection = () => {
     const [activeTab, setActiveTab] = useState('list');
-    const [imageUrl, setImageUrl] = useState('');
-    const [selectedImageFile, setSelectedImageFile] = useState(null);
+    const [images, setImages] = useState([]);
     const [isUploadingImage, setIsUploadingImage] = useState(false);
     const [imageUploadError, setImageUploadError] = useState('');
     const [activeProperties, setActiveProperties] = useState([]);
 
     useEffect(() => {
         if (activeTab === 'list') {
-            setActiveProperties(getAllProperties());
+            fetchProperties()
+            
         }
     }, [activeTab]);
 
-    const handleImageSelect = async (event) => {
-        const [file] = event.target.files || [];
-        setSelectedImageFile(file || null);
-        setImageUploadError('');
 
-        if (!file) {
+    const fetchProperties=async()=>{
+        let response=await getAllProperties()
+        console.log(response.data,"dataaa");
+        setActiveProperties(response.data)
+        
+        
+    }
+
+    const handleImageSelect = async (event) => {
+        const files = Array.from(event.target.files || []);
+        if (!files.length) return;
+        if (images.length + files.length > 6) {
+            window.toast && window.toast.error
+                ? window.toast.error('You can only upload up to 6 images.')
+                : alert('You can only upload up to 6 images.');
             return;
         }
-
+        setIsUploadingImage(true);
+        setImageUploadError('');
         try {
-            setIsUploadingImage(true);
-            setImageUploadError('');
-            const uploadedImageUrl = await uploadImageToCloudinary(file);
-            setImageUrl(uploadedImageUrl);
+            const uploadPromises = files.map(file => uploadImageToCloudinary(file));
+            const urls = await Promise.all(uploadPromises);
+            setImages(prev => [...prev, ...urls]);
         } catch (error) {
-            setImageUploadError(error.message || 'Failed to upload image.');
+            setImageUploadError(error.message || 'Failed to upload image(s).');
         } finally {
             setIsUploadingImage(false);
         }
     };
+
+    const handleImageRemove = (url) => {
+        setImages(prev => prev.filter(img => img !== url));
+    };
+
+
+    
 
     return (
         <>
@@ -48,13 +65,12 @@ const ManagePropertiesSection = () => {
                 <PropertyListingsTable properties={activeProperties} onEdit={() => setActiveTab('add')} />
             ) : (
                 <AddPropertyForm
-                    imageUrl={imageUrl}
-                    selectedImageFile={selectedImageFile}
+                    images={images}
                     isUploadingImage={isUploadingImage}
                     imageUploadError={imageUploadError}
                     onCancel={() => setActiveTab('list')}
                     onImageSelect={handleImageSelect}
-                    onImageUrlChange={setImageUrl}
+                    onImageRemove={handleImageRemove}
                 />
             )}
         </>
